@@ -6,6 +6,8 @@ Clone repo into `~/.talon/user`
 
     `cd ~/.talon/user`
     `git clone git@github.com:knausj85/knausj_talon.git knausj_talon`
+    
+Alternatively, access the directory by right clicking the Talon icon in taskbar, and clicking `Scripting>Open ~/talon`, then navigating to `user`.
 
 The folder structure should look like:
 
@@ -21,6 +23,50 @@ If using wav2letter, extract the entire contents of the tarball (found pinned in
 ~/.talon/w2l/en_US
 ~/.talon/user/w2l.py
 ```
+
+## Getting started with Talon for coding with this depot
+
+Use the “help all,” "help active," and “help alphabet” commands to browse avaiable commands. Available commands can change with the application or window title that has focus.
+
+It's recommended to learn the alphabet first, then get familiar with the keys, symbols, and formatters. 
+
+The alphabet is defined here
+https://github.com/knausj85/knausj_talon/blob/master/code/keys.py#L6
+
+Keys are defined later in the same file: 
+https://github.com/knausj85/knausj_talon/blob/master/code/keys.py#L67
+
+Symbols: 
+https://github.com/knausj85/knausj_talon/blob/master/text/symbols.talon
+
+Formatters: 
+https://github.com/knausj85/knausj_talon/blob/master/code/formatters.py#L102
+
+Try using formatters by saying e.g. “snake hello world,” which will insert hello_world
+
+Mutliple formatters can be used togther, e.g. “dubstring snake hello world,” which will insert "hello_world" 
+
+Once you have the basics of text input down, try copying some code from one window to another.
+
+After that, explore using ordinal repetition for easily repeating a command without pausing (e.g., saying “go up fifth” will go up five lines), window switching (“focus chrome”), and moving around in your text editor of choice. 
+
+If you use vim, just start with the numbers and alphabet, otherwise look at generic_editor.talon as well at jetbrains, vscode, and any other integrations).  
+
+## File Manager commands
+For the following file manager commands to work, your file manager must display the full folder path in the title bar. https://github.com/knausj85/knausj_talon/blob/baa323fcd34d8a1124658a425abe8eed59cf2ee5/apps/file_manager.talon
+
+
+For Mac OS X's Finder, run this command in terminal to display the full path in the title.
+
+```
+defaults write com.apple.finder _FXShowPosixPathInTitle -bool YES
+```
+
+For Windows Explorer, follow these directions
+https://www.howtogeek.com/121218/beginner-how-to-make-explorer-always-show-the-full-path-in-windows-8/
+
+For the Windows command line, the "refresh title" command will force the title to the current directory, and all directory commands ("follow 1") will automatically update the title. The 
+
 
 ## Jetbrains commands
 
@@ -131,10 +177,15 @@ With python scripts, you may declare and implement new actions and captures.
 Modules declare actions and captures; actions may have a default implementation. Actions and captures then can be combined to compose extremely useful voice commands in .talon files.
 
 ### Actions
+
+Actions are the functionality assigned to a voice command, e.g. the action for the command "new tab" would implement opening the tab.
+
+All user-defined actions in this repository are prefixed with "user." by talon
+
 ```python
 from talon import Module, Context, actions, settings
 
-mod = Module('description')
+mod = Module()
 @mod.action_class
 class Actions:
     def bare_action():
@@ -153,13 +204,14 @@ Actions may be implemented in a .talon file, allowing the implementation to be c
 os: linux
 app: Slack
 -
-action(user.description.bare_action):
-  insert("LINUX")
+action(user.bare_action):
+    insert("LINUX")
+
 ```
 
 This makes actions very reusable, particularly across OSes, applications, and programming languages. In this way, you could define a single command that works across all programming languages, etc.
 
-For example, `window_management.talon` leverages this:
+For example, window_management.talon leverages this ability to redefine actions per context to make voice commands that do the right thing regardless of operating system (voice commands on the left and actions on the right):
 
 ```insert code:
 new window: app.window_open()
@@ -169,7 +221,24 @@ close window: app.window_close()
 focus <user.running_applications>: user.switcher_focus(running_applications)
 ```
 
-The Talon-declared app actions are defined per-operating system in separate OS-specific .talon files. The voice commands themselves work across all operating systems.
+These Talon-declared app actions are then defined per-operating system in separate OS-specific .talon files:
+
+```insert code:
+os: mac
+-
+action(app.window_open):
+    key(cmd-n)
+```
+
+```insert code
+os: windows
+os: linux
+-
+action(app.window_open):
+    key(ctrl-n)
+```
+
+The voice commands themselves will now work regardless of operating system. For example, "window open" will use `cmd-n` when using mac and `ctrl-n` when using windows or linux.
 
 Note that if you attempt to use an action in a context that has no implementation for the action, you will see warnings in the Talon log.
 

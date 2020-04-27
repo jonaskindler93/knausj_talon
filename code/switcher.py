@@ -1,4 +1,4 @@
-from talon import app, Module, Context, actions, ui
+from talon import app, Module, Context, actions, ui,imgui
 from talon.voice import Capture
 import re
 import time
@@ -6,7 +6,11 @@ import os
 import platform
 
 app_cache = {}
-overrides = {}
+overrides = {
+    'code': 'Code', #'code': 'VSCode' 
+    'grip': 'DataGrip', 
+    'term': 'iTerm2'
+}
 
 mod = Module()
 mod.list('running', desc='all running applications')
@@ -23,11 +27,11 @@ def launch_applications(m) -> Capture:
 ctx = Context()
 @ctx.capture(rule='{self.running}')
 def running_applications(m):
-    return m._words[-1]
+    return m.running
     
 @ctx.capture(rule='{self.launch}')
 def launch_applications(m):
-    return m
+    return m.launch
     
 def split_camel(word):
     return re.findall(r'[0-9A-Z]*[a-z]+(?=[A-Z]|$)', word)
@@ -43,17 +47,31 @@ def get_words(name):
 class Actions:
     def switcher_focus(name: str):
         """Focus a new application by  name"""
-        full = ctx.lists['self.running'].get(name)
-        if not full:
-            return
         for app in ui.apps():
-            if app.name == full and not app.background:
+            #print("app.name:" + app.name)
+            #print("app.bundler: " + app.bundle)
+            if app.name == name and not app.background:
                 app.focus()
                 break
 
     def switcher_launch(path: str):
         """Launch a new application by path"""
         ui.launch(path=path)
+
+    def switcher_list_running():
+        """Lists all running applications"""
+        gui.show()
+
+    def switcher_hide_running():
+        """Hides list of running applications"""
+        gui.hide()
+
+@imgui.open()
+def gui(gui: imgui.GUI):
+    gui.text("Names of running applications")
+    gui.line()
+    for line in  ctx.lists['self.running']:
+        gui.text(line)
 
 def update_lists():
     new = {}
@@ -64,8 +82,8 @@ def update_lists():
         words = get_words(name)
         for word in words:
             if word and not word in new:
-                new[word] = cur_app.name
-        new[name] = cur_app.name
+                new[word.lower()] = cur_app.name
+        new[name.lower()] = cur_app.name
     for override in overrides:
         new[override] = overrides[override]
         
