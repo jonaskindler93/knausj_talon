@@ -17,10 +17,10 @@ gaze_job = None
 cancel_scroll_on_pop = True
 
 def on_pop(active):
-    if gaze_job or scroll_job:
-        stop_scroll()
-    elif not eye_zoom_mouse.zoom_mouse.enabled:
-        ctrl.mouse_click(button=0, hold=16000)
+    #if gaze_job or scroll_job:
+    #    stop_scroll()
+    #elif not eye_zoom_mouse.zoom_mouse.enabled:
+    ctrl.mouse_click(button=0, hold=16000)
 
 if cancel_scroll_on_pop:      
     noise.register('pop', on_pop)
@@ -66,7 +66,8 @@ def gaze_scroll():
             
         midpoint = window.y + window.height / 2
         amount = int(((y - midpoint) / (window.height / 10)) ** 3)
-        actions.mouse_scroll(by_lines=False, y=amount)
+        if abs(amount)>= 30:
+            actions.mouse_scroll(by_lines=False, y=-amount)
     
     #print(f"gaze_scroll: {midpoint} {window.height} {amount}")
     
@@ -75,10 +76,9 @@ def stop_scroll():
     scroll_amount = 0
     if scroll_job:
         cron.cancel(scroll_job)
-        
     if gaze_job:
         cron.cancel(gaze_job)
-        
+    
     scroll_job = None
     gaze_job = None
     
@@ -107,9 +107,8 @@ class Actions:
   
     def mouse_wake():
         """Enable control mouse, zoom mouse, and disables cursor"""
-        eye_zoom_mouse.zoom_mouse.enable()
         eye_mouse.control_mouse.enable() 
-        show_cursor_helper(False)
+        show_cursor_helper(True)
         
     def mouse_calibrate():
         """Start calibration"""
@@ -179,6 +178,7 @@ class Actions:
     def mouse_scroll_stop():
         """Stops scrolling"""
         stop_scroll()
+        mouse_show_cursor()
         
     def mouse_gaze_scroll():
         """Starts gaze scroll"""
