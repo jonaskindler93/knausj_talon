@@ -4,7 +4,7 @@ welcome back:
 	user.mouse_wake()
 	user.history_enable()
 	speech.enable()	
-sleep all: 
+(sleep all): 
 	user.history_disable()
 	user.homophones_hide()
 	user.help_hide()
@@ -12,7 +12,7 @@ sleep all:
 	speech.disable()
 	user.engine_sleep()
 talon sleep: speech.disable()
-talon wake: speech.enable()
+(talon wake|key("cmd-shift-ctrl-m")): speech.enable()
 dragon mode: speech.disable()
 talon mode: speech.enable()
 ^dictation mode$:

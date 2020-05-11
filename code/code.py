@@ -25,7 +25,8 @@ class CodeActions:
         #but the doc is correct.
         if title == "":
             title = ui.active_window().doc
-
+        if title == "JupyterLab":
+            return "python"
         m = regex_ext.search(title)
         if m:
             extension = m.group(1)
