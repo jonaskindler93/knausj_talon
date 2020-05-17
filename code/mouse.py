@@ -46,7 +46,7 @@ mod.list('mouse_button', desc='List of mouse button words to mouse_click index p
 mod.setting('mouse_enable_pop_click', type=int, default=1,desc="Enable pop to click when control mouse is enabled.")
 mod.setting('mouse_enable_pop_stops_scroll', type=int,default=0,desc="When enabled, pop stops continuous scroll modes (wheel upper/downer/gaze)")
 mod.setting('mouse_wake_hides_cursor', type=int, default=0,desc="When enabled, mouse wake will hide the cursor. mouse_wake enables zoom mouse.")
-mod.setting('mouse_hide_mouse_gui', type=int, default=0,desc="When enabled, the 'Scroll Mouse' GUI will not be shown.")
+mod.setting('mouse_hide_mouse_gui', type=int, default=1,desc="When enabled, the 'Scroll Mouse' GUI will not be shown.")
 
 ctx = Context()
 ctx.lists['self.mouse_button'] = {
@@ -208,6 +208,8 @@ def on_pop(active):
     if (gaze_job or scroll_job):
         if settings.get("user.mouse_enable_pop_stops_scroll") >= 1:
             stop_scroll()
+        if settings.get("user.mouse_enable_pop_click") >= 1:
+            ctrl.mouse_click(button=0, hold=16000)
     elif not eye_zoom_mouse.zoom_mouse.enabled and eye_mouse.mouse.attached_tracker is not None:
         if settings.get("user.mouse_enable_pop_click") >= 1:
             ctrl.mouse_click(button=0, hold=16000)
