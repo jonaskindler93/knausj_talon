@@ -43,10 +43,10 @@ hidden_cursor = os.path.join(
 
 mod = Module()
 mod.list('mouse_button', desc='List of mouse button words to mouse_click index parameter')
-mod.setting('mouse_enable_pop_click', type=int, default=1,desc="Enable pop to click when control mouse is enabled.")
+mod.setting('mouse_enable_pop_click', type=int, default=0,desc="Enable pop to click when control mouse is enabled.")
 mod.setting('mouse_enable_pop_stops_scroll', type=int,default=0,desc="When enabled, pop stops continuous scroll modes (wheel upper/downer/gaze)")
 mod.setting('mouse_wake_hides_cursor', type=int, default=0,desc="When enabled, mouse wake will hide the cursor. mouse_wake enables zoom mouse.")
-mod.setting('mouse_hide_mouse_gui', type=int, default=1,desc="When enabled, the 'Scroll Mouse' GUI will not be shown.")
+mod.setting('mouse_hide_mouse_gui', type=int, default=0,desc="When enabled, the 'Scroll Mouse' GUI will not be shown.")
 
 ctx = Context()
 ctx.lists['self.mouse_button'] = {
