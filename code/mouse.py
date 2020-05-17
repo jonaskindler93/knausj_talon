@@ -51,7 +51,7 @@ mod.setting("mouse_focus_change_stops_scroll", int)
 mod.setting("mouse_wake_hides_cursor", int)
 
 ctx = Context()
-ctx.settings["self.mouse_enable_pop_click"] = 0
+ctx.settings["self.mouse_enable_pop_click"] = 1
 ctx.settings["self.mouse_enable_pop_stops_scroll"] = 0
 ctx.settings["self.mouse_wake_hides_cursor"] = 0
 
@@ -180,8 +180,7 @@ class Actions:
         global continuous_scoll_mode
         continuous_scoll_mode = "gaze scroll"
         start_cursor_scrolling()
-        # gui_wheel.show()
-
+        gui_wheel.show()
 
 def show_cursor_helper(show):
     """Show/hide the cursor"""
@@ -216,12 +215,17 @@ def show_cursor_helper(show):
 
 
 def on_pop(active):
-    ctrl.mouse_click(button=0, hold=16000)
+    if (gaze_job or scroll_job):
+        if settings.get("user.mouse_enable_pop_stops_scroll") >= 1:
+            stop_scroll()
+        if settings.get("user.mouse_enable_pop_click") >= 1:
+            ctrl.mouse_click(button=0, hold=16000)
+    elif not eye_zoom_mouse.zoom_mouse.enabled and eye_mouse.mouse.attached_tracker is not None:
+        if settings.get("user.mouse_enable_pop_click") >= 1:
+            ctrl.mouse_click(button=0, hold=16000)
 
-
-noise.register("pop", on_pop)
-
-
+noise.register('pop', on_pop)
+    
 def mouse_scroll(amount):
     def scroll():
         global scroll_amount
@@ -262,12 +266,11 @@ def gaze_scroll():
 
         midpoint = window.y + window.height / 2
         amount = int(((y - midpoint) / (window.height / 10)) ** 3)
-        if abs(amount) >= 30:
-            actions.mouse_scroll(by_lines=False, y=-amount)
+        if abs(amount)>30:
+            actions.mouse_scroll(by_lines=False, y=amount)
 
-    # print(f"gaze_scroll: {midpoint} {window.height} {amount}")
-
-
+    #print(f"gaze_scroll: {midpoint} {window.height} {amount}")
+    
 def stop_scroll():
     global scroll_amount, scroll_job, gaze_job
     scroll_amount = 0
