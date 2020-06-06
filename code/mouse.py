@@ -3,7 +3,6 @@ from talon.engine import engine
 from talon_plugins import speech, eye_mouse, eye_zoom_mouse
 import platform
 import subprocess
-import ctypes
 import os
 import pathlib
 
@@ -176,6 +175,7 @@ def show_cursor_helper(show):
     """Show/hide the cursor"""
     if "Windows-10" in platform.platform(terse=True):
         import winreg, win32con
+        import ctypes
 
         try:
             Registrykey = winreg.OpenKey(

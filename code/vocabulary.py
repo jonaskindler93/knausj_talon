@@ -1,28 +1,50 @@
 from talon import Context, Module
 
+simple_vocabulary = [
+    "nmap",
+    "admin",
+    "Cisco",
+    "Citrix",
+    "VPN",
+    "DNS",
+    "minecraft",
+]
+
+mapping_vocabulary = {
+    "i": "I",
+    "i'm": "I'm",
+    "i've": "I've",
+    "i'll": "I'll",
+    "i'd": "I'd",
+}
+
+mapping_vocabulary.update(dict(zip(simple_vocabulary, simple_vocabulary)))
 
 mod = Module()
 
-class TextObject:
-    def __init__(self, m):
-        self.words = list(str(m).split(" "))
-        self.text = " ".join(self.words)
-
+def remove_dragon_junk(word):
+    return str(word).lstrip("\\").split("\\")[0]
 
 @mod.capture(rule='({user.vocabulary} | <word>)')
 def word(m) -> str:
     try: return m.vocabulary
-    except AttributeError: return m.word
+    except AttributeError: return remove_dragon_junk(m.word)
 
-
-@mod.capture(rule="(<user.word> | <phrase>)+")
+@mod.capture(rule='(<user.word> | <phrase>)+')
 def text(m) -> str:
-    return TextObject(m).text
+    #todo: use actions.dicate.parse_words for better dragon support once supported
+    words = str(m).split(' ')
+    i = 0
+    while i < len(words):
+        words[i] = remove_dragon_junk(words[i])
+        i += 1
 
+    return ' '.join(words)
 
-@mod.capture(rule="({user.vocabulary} | <phrase>)+")
-def textObject(m) -> str:
-    return TextObject(m)
+mod.list('vocabulary', desc='user vocabulary')
 
+ctx = Context()
 
-mod.list("vocabulary", desc="user vocabulary")
+# setup the word map too
+ctx.settings['dictate.word_map'] = mapping_vocabulary
+ctx.lists['user.vocabulary'] = mapping_vocabulary
