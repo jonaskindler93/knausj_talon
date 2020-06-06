@@ -6,6 +6,8 @@ key = actions.key
 
 extension_lang_map = {
 "py"   : "python",
+"ipynb*": "python",
+"ipynb": "python",
 "cs"   : "csharp",
 "cpp"  : "cplusplus",
 "h"    : "cplusplus",
