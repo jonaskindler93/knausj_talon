@@ -1,10 +1,12 @@
-from talon import cron, ctrl, ui, Module, Context, actions, noise, settings, imgui
-from talon.engine import engine
-from talon_plugins import speech, eye_mouse, eye_zoom_mouse
-import platform
-import subprocess
 import os
 import pathlib
+import platform
+import subprocess
+
+from talon import (Context, Module, actions, app, cron, ctrl, imgui, noise,
+                   settings, ui)
+from talon.engine import engine
+from talon_plugins import eye_mouse, eye_zoom_mouse, speech
 
 key = actions.key
 self = actions.self
@@ -41,26 +43,48 @@ hidden_cursor = os.path.join(
 )
 
 mod = Module()
-mod.list('mouse_button', desc='List of mouse button words to mouse_click index parameter')
-mod.setting('mouse_enable_pop_click', type=int, default=0,desc="Enable pop to click when control mouse is enabled.")
-mod.setting('mouse_enable_pop_stops_scroll', type=int,default=0,desc="When enabled, pop stops continuous scroll modes (wheel upper/downer/gaze)")
-mod.setting('mouse_wake_hides_cursor', type=int, default=0,desc="When enabled, mouse wake will hide the cursor. mouse_wake enables zoom mouse.")
-mod.setting('mouse_hide_mouse_gui', type=int, default=0,desc="When enabled, the 'Scroll Mouse' GUI will not be shown.")
+mod.list(
+    "mouse_button", desc="List of mouse button words to mouse_click index parameter"
+)
+mod.setting(
+    "mouse_enable_pop_click",
+    type=int,
+    default=0,
+    desc="Enable pop to click when control mouse is enabled.",
+)
+mod.setting(
+    "mouse_enable_pop_stops_scroll",
+    type=int,
+    default=0,
+    desc="When enabled, pop stops continuous scroll modes (wheel upper/downer/gaze)",
+)
+mod.setting(
+    "mouse_wake_hides_cursor",
+    type=int,
+    default=0,
+    desc="When enabled, mouse wake will hide the cursor. mouse_wake enables zoom mouse.",
+)
+mod.setting(
+    "mouse_hide_mouse_gui",
+    type=int,
+    default=0,
+    desc="When enabled, the 'Scroll Mouse' GUI will not be shown.",
+)
 
 ctx = Context()
-ctx.lists['self.mouse_button'] = {
-     #right click
-     'righty':  '1',
-     'rickle': '1',
-     
-     #left click
-     'chiff': '0',
+ctx.lists["self.mouse_button"] = {
+    # right click
+    "righty": "1",
+    "rickle": "1",
+    # left click
+    "chiff": "0",
+    "beep": "0",
 }
 
 continuous_scoll_mode = ""
 
 
-@imgui.open(x=700, y=0)
+@imgui.open(x=700, y=0, software=False)
 def gui_wheel(gui: imgui.GUI):
     gui.text("Scroll mode: {}".format(continuous_scoll_mode))
     gui.line()
@@ -99,8 +123,8 @@ class Actions:
 
     def mouse_toggle_zoom_mouse():
         """Toggles zoom mouse"""
-        eye_zoom_mouse.toggle_zoom_mouse(not eye_zoom_mouse.zoom_mouse.enabled)  
-       
+        eye_zoom_mouse.toggle_zoom_mouse(not eye_zoom_mouse.zoom_mouse.enabled)
+
     def mouse_cancel_zoom_mouse():
         """Cancel zoom mouse if pending"""
         if (
@@ -155,7 +179,7 @@ class Actions:
         mouse_scroll(-80)()
 
         if scroll_job is None:
-            start_scroll() 
+            start_scroll()
         if settings.get("user.mouse_hide_mouse_gui") == 0:
             gui_wheel.show()
 
@@ -170,10 +194,11 @@ class Actions:
         start_cursor_scrolling()
         if settings.get("user.mouse_hide_mouse_gui") == 0:
             gui_wheel.show()
-        
+
+
 def show_cursor_helper(show):
     """Show/hide the cursor"""
-    if "Windows-10" in platform.platform(terse=True):
+    if app.platform == "windows":
         import winreg, win32con
         import ctypes
 
@@ -205,15 +230,17 @@ def show_cursor_helper(show):
 
 
 def on_pop(active):
-    if (gaze_job or scroll_job):
+    if gaze_job or scroll_job:
         if settings.get("user.mouse_enable_pop_stops_scroll") >= 1:
             stop_scroll()
     if not eye_zoom_mouse.zoom_mouse.enabled and eye_mouse.mouse.attached_tracker is not None:
         if settings.get("user.mouse_enable_pop_click") >= 1:
             ctrl.mouse_click(button=0, hold=16000)
 
-noise.register('pop', on_pop)
-    
+
+noise.register("pop", on_pop)
+
+
 def mouse_scroll(amount):
     def scroll():
         global scroll_amount

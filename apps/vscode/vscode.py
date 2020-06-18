@@ -1,25 +1,25 @@
-from talon import Context, actions, ui, Module
-import platform
-platform = platform.platform(terse=True)
-is_mac = "Darwin" in platform
+from talon import Context, Module, actions, app, ui
 
-print(platform)
+is_mac = app.platform == "mac"
+
 ctx = Context()
-ctx.matches = r'''
+ctx.matches = r"""
 app: Code
 app: Code - OSS
 app: Code
 app: Visual Studio Code
 app: Code.exe
-'''
-@ctx.action_class('win')
+"""
+
+
+@ctx.action_class("win")
 class win_actions:
-    def filename(): 
+    def filename():
         title = actions.win.title()
-        #this doesn't seem to be necessary on VSCode for Mac
-        #if title == "":
+        # this doesn't seem to be necessary on VSCode for Mac
+        # if title == "":
         #    title = ui.active_window().doc
-    
+
         if is_mac:
             result = title.split(" — ")[0]
         else:
@@ -27,7 +27,7 @@ class win_actions:
 
         if "." in result:
             return result
-    
+
         return ""
 
     def file_ext():

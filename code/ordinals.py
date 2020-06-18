@@ -1,10 +1,6 @@
-import os
-import platform
-import re
-import time
 from math import floor
 
-from talon import Context, Module, actions, app, ui
+from talon import Context, Module
 
 ordinal_words = {}
 ordinal_ones = [

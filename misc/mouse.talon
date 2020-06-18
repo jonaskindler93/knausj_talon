@@ -8,19 +8,19 @@ settings():
 control mouse: user.mouse_toggle_control_mouse()
 zoom mouse: user.mouse_toggle_zoom_mouse()
 camera overlay: eye_mouse.camera_overlay.toggle()
-run calibration: user.mouse_calibrate()	
+run calibration: user.mouse_calibrate()
 <user.mouse_index>: mouse_click(mouse_index)
-<user.modifiers> <user.mouse_index>: 
-	key("{modifiers}:down")
-	mouse_click(mouse_index)
-	key("{modifiers}:up")
-(dubclick | duke): 
-	mouse_click()
-	mouse_click()
-(tripclick | triplick): 
-	mouse_click()
-	mouse_click()
-	mouse_click()
+<user.modifiers> <user.mouse_index>:
+    key("{modifiers}:down")
+    mouse_click(mouse_index)
+    key("{modifiers}:up")
+(dubclick | duke):
+    mouse_click()
+    mouse_click()
+(tripclick | triplick):
+    mouse_click()
+    mouse_click()
+    mouse_click()
 wheel down: user.mouse_scroll_down()
 wheel tiny [down]: mouse_scroll(20)
 wheel downer: user.mouse_scroll_down_continuous()

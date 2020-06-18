@@ -1,16 +1,13 @@
-from talon import app, Module, Context, actions, ui, imgui, settings
+from talon import app, Module, Context, actions, ui, imgui, settings, app
 from os.path import expanduser
 from subprocess import Popen
 from pathlib import Path
 from typing import List, Union
 import os
 import math
-import platform
 import re
 from itertools import islice
 
-platform = platform.platform(terse=True)
-#print("platform = " + platform)
 selection_numbers = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty',]
 selection_map = {n: i for i, n in enumerate(selection_numbers)}
 
@@ -22,6 +19,7 @@ mod.list('file_manager_directory_exclusions', desc='list of titles that are excl
 setting_auto_show_pickers = mod.setting('file_manager_auto_show_pickers', type=int, default=0, desc="Enable to show the file/directories pickers automatically")
 setting_folder_limit = mod.setting('file_manager_folder_limit', type=int, default=1000,desc="Maximum number of files/folders to iterate")
 setting_file_limit = mod.setting('file_manager_file_limit', type=int, default=1000,desc="Maximum number of files to iterate")
+mod.tag("file_manager", desc='Tag for enabling generic file management commands')
 
 user_path = os.path.expanduser('~')
 
@@ -34,7 +32,7 @@ is_terminal = False
 is_linux = False
 cached_title = None
 
-if "Windows-10" in platform:
+if app.platform == "windows":
     is_windows = True
     import ctypes
     GetUserNameEx = ctypes.windll.secur32.GetUserNameExW
@@ -69,7 +67,7 @@ if "Windows-10" in platform:
     supported_programs = ["explorer.exe", "cmd.exe",]
     terminal_programs = ["cmd.exe"]
 
-elif "Darwin" in platform:
+elif app.platform == "mac":
     ###
     #print("Mac OS X!!")
     is_mac = True
@@ -78,7 +76,7 @@ elif "Darwin" in platform:
     supported_programs = ["com.apple.Terminal", "com.apple.finder"]
     terminal_programs = ["com.apple.Terminal",]
 
-elif "linux" in platform.lower():
+elif app.platform == "linux":
     is_linux = True
     ctx.lists['user.file_manager_directory_remap'] = {}
     ctx.lists['user.file_manager_directory_exclusions'] = {}
@@ -276,6 +274,40 @@ class Actions:
         else:
             actions.insert(path)
 
+    def file_manager_new_folder():
+        """Creates a new folder in a gui filemanager or inserts the command to do so for terminals"""
+        if is_windows:
+            if is_terminal:
+                actions.insert("mkdir ")
+            else:
+                #print("fo iy...")
+                actions.key("ctrl-shift-n")
+        elif is_mac:
+            if is_terminal:
+                actions.insert("mkdir ")
+            else:
+                actions.key("cmd-shift-n")
+        #tbd
+        #else is_linux:
+
+    def file_manager_show_properties():
+        """Shows the properties for the file"""
+        #todo: does this make sense for terminals? also, linux support
+        if not is_terminal:
+            if is_windows:
+                actions.key("alt-enter")
+            elif is_mac:
+                actions.key("cmd-i")
+            #else:
+
+    def file_manager_terminal_here():
+        """Opens terminal at current location"""
+        if not is_terminal:
+            if is_windows:  
+                actions.key("ctrl-l")
+                actions.insert("cmd.exe")
+                actions.key("enter")
+
 pattern = re.compile(r"[A-Z][a-z]*|[a-z]+|\d")
 def create_spoken_forms(symbols, max_len=10):
     return [' '.join(list(islice(pattern.findall(s), max_len))) for s in symbols]
@@ -404,8 +436,9 @@ def file_manager_directories(m):
 def file_manager_files(m):
     return m.file_manager_files
 
+    
 current_folder_page = 1
-@imgui.open(y=10,x=900)
+@imgui.open(y=10,x=900, software=False)
 def gui_folders(gui: imgui.GUI):
     global current_folder_page, total_folder_pages
     total_folder_pages = math.ceil(len(ctx.lists["self.file_manager_directories"]) / len(selection_numbers))
@@ -430,7 +463,7 @@ def gui_folders(gui: imgui.GUI):
          #   actions.user.file_manager_previous_folder_page()
 
 current_file_page = 1
-@imgui.open(y=10,x=1300)
+@imgui.open(y=10,x=1300,software=False)
 def gui_files(gui: imgui.GUI):
     global file_selections, current_file_page, total_file_pages
     total_file_pages = math.ceil(len(file_selections) / len(selection_numbers))

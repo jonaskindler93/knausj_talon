@@ -12,13 +12,14 @@ state else: user.code_state_else()
 state self: user.code_self()
 #todo: this is valid for many languages,
 # but probably not all
-self taught: 
-	user.code_self()
+self dot: 
+    user.code_self()
     insert(".")
 state while: user.code_state_while()
 state for: user.code_state_for()
 state switch: user.code_state_switch()
 state case: user.code_state_case()
+state do: user.code_state_do()
 state goto: user.code_state_go_to()
 state import: user.code_import()
 from import: user.code_from_import()

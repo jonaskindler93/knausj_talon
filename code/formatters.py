@@ -1,6 +1,8 @@
-from talon import Module, Context, actions, ui, imgui
-from talon.grammar import Phrase
+import os
 from typing import List, Union
+
+from talon import Context, Module, actions, imgui, ui
+from talon.grammar import Phrase
 
 ctx = Context()
 key = actions.key
@@ -20,10 +22,11 @@ def surround(by):
 
     return func
 
+
 def FormatText(m: Union[str, Phrase], fmtrs: str):
     words = []
     if isinstance(m, str):
-        words = m.split(' ')
+        words = m.split(" ")
     else:
         if m.words[-1] == "over":
             m.words = m.words[:-1]
@@ -36,8 +39,9 @@ def FormatText(m: Union[str, Phrase], fmtrs: str):
                 words = s.get().split(" ")
             if not words:
                 return
-    
+
     return format_text_helper(words, fmtrs)
+
 
 def format_text_helper(word_list, fmtrs: str):
     fmtr_list = fmtrs.split(",")
@@ -122,30 +126,59 @@ formatters_dict = {
         if i == 0 or word not in words_to_keep_lowercase
         else word,
     ),
+    "ALL_CAPS": (SEP, every_word(lambda w: w.upper())),
+    "ALL_LOWERCASE": (SEP, every_word(lambda w: w.lower())),
+    "CAPITALIZE_ALL_WORDS": (
+        SEP,
+        lambda i, word, _: word.capitalize()
+        if i == 0 or word not in words_to_keep_lowercase
+        else word,
+    ),
+    "CAPITALIZE_FIRST_WORD": (SEP, first_vs_rest(lambda w: w.capitalize())),
+    "DASH_SEPARATED": words_with_joiner("-"),
+    "DOT_SEPARATED": words_with_joiner("."),
+    "DOUBLE_COLON_SEPARATED": words_with_joiner("::"),
+    "DOUBLE_QUOTED_STRING": (SEP, surround('"')),
+    "DOUBLE_UNDERSCORE": (NOSEP, first_vs_rest(lambda w: "__%s__" % w)),
     "FIRST_THREE": (NOSEP, lambda i, word, _: word[0:3]),
     "FIRST_FOUR": (NOSEP, lambda i, word, _: word[0:4]),
     "FIRST_FIVE": (NOSEP, lambda i, word, _: word[0:5]),
+    "FOLDER_SEPARATED": (NOSEP, every_word(lambda w: w + os.sep)),
+    "NO_SPACES": (NOSEP, every_word(lambda w: w)),
+    "PRIVATE_CAMEL_CASE": (NOSEP, first_vs_rest(lambda w: w, lambda w: w.capitalize())),
+    "PUBLIC_CAMEL_CASE": (NOSEP, every_word(lambda w: w.capitalize())),
+    "SINGLE_QUOTED_STRING": (SEP, surround("'")),
+    "SLASH_SEPARATED": (NOSEP, every_word(lambda w: "/" + w)),
+    "SNAKE_CASE": (
+        NOSEP,
+        first_vs_rest(lambda w: w.lower(), lambda w: "_" + w.lower()),
+    ),
+    "SPACE_SURROUNDED_STRING": (SEP, surround(" ")),
 }
 
 # This is the mapping from spoken phrases to formatters
 formatters_words = {
-    "dunder": formatters_dict["DOUBLE_UNDERSCORE"],
-    "camel": formatters_dict["PRIVATE_CAMEL_CASE"],
-    "hammer": formatters_dict["PUBLIC_CAMEL_CASE"],
-    "snake": formatters_dict["SNAKE_CASE"],
-    "smash": formatters_dict["NO_SPACES"],
-    "kebab": formatters_dict["DASH_SEPARATED"],
-    "packed": formatters_dict["DOUBLE_COLON_SEPARATED"],
     "allcaps": formatters_dict["ALL_CAPS"],
     "alldown": formatters_dict["ALL_LOWERCASE"],
+    "camel": formatters_dict["PRIVATE_CAMEL_CASE"],
+    "dotted": formatters_dict["DOT_SEPARATED"],
     "dubstring": formatters_dict["DOUBLE_QUOTED_STRING"],
-    "string": formatters_dict["SINGLE_QUOTED_STRING"],
+    "dunder": formatters_dict["DOUBLE_UNDERSCORE"],
+    "folder": formatters_dict["FOLDER_SEPARATED"],
+    "hammer": formatters_dict["PUBLIC_CAMEL_CASE"],
+    "kebab": formatters_dict["DASH_SEPARATED"],
+    "packed": formatters_dict["DOUBLE_COLON_SEPARATED"],
     "padded": formatters_dict["SPACE_SURROUNDED_STRING"],
     "dotted": formatters_dict["DOT_SEPARATED"],
     "arguments": formatters_dict["COMMA_SEPARATED"],
     "slasher": formatters_dict["SLASH_SEPARATED"],
     "sentence": formatters_dict["CAPITALIZE_FIRST_WORD"],
+    "slasher": formatters_dict["SLASH_SEPARATED"],
+    "smash": formatters_dict["NO_SPACES"],
+    "snake": formatters_dict["SNAKE_CASE"],
+    "string": formatters_dict["SINGLE_QUOTED_STRING"],
     "title": formatters_dict["CAPITALIZE_ALL_WORDS"],
+    "upper": formatters_dict["ALL_CAPS"],
     # disable a few formatters for now
     # "tree": formatters_dict["FIRST_THREE"],
     # "quad": formatters_dict["FIRST_FOUR"],
@@ -179,24 +212,28 @@ class Actions:
         
     def list_formatters():
         """Lists all formatters"""
-        gui.show()
+        # gui.show()
         gui.freeze()
 
     def hide_formatters():
         """Hides list of formatters"""
         gui.hide()
 
-@ctx.capture(rule='{self.formatters}+')
-def formatters(m):
-    return ','.join(m.formatters_list)
 
-@ctx.capture(rule='<self.formatters> <user.text>')
+@ctx.capture(rule="{self.formatters}+")
+def formatters(m):
+    return ",".join(m.formatters_list)
+
+
+@ctx.capture(rule="<self.formatters> <user.text>")
 def format_text(m):
     return FormatText(m.text, m.formatters)
 
-ctx.lists['self.formatters'] = formatters_words.keys()
 
-@imgui.open()
+ctx.lists["self.formatters"] = formatters_words.keys()
+
+
+@imgui.open(software=False)
 def gui(gui: imgui.GUI):
     gui.text("List formatters")
     gui.line()
