@@ -24,7 +24,7 @@ class Actions:
         if "Windows-10" in active_platform:
             actions.key("super-shift-s")       
         elif "Darwin" in active_platform:
-            actions.key("ctrl-shift-cmd-4")
+            actions.key("shift-cmd-4")
 
     def screenshot_clipboard():
         '''takes a screenshot of the entire screen and saves it to the clipboard'''
