@@ -12,6 +12,9 @@ words_to_keep_lowercase = "a,an,the,at,by,for,in,is,of,on,to,up,and,as,but,or,no
 )
 
 
+last_formatted_phrase = ""
+last_phrase = ""
+
 def surround(by):
     def func(i, word, last):
         if i == 0:
@@ -24,6 +27,8 @@ def surround(by):
 
 
 def FormatText(m: Union[str, Phrase], fmtrs: str):
+    global last_phrase
+    last_phrase = m
     words = []
     if isinstance(m, str):
         words = m.split(" ")
@@ -58,7 +63,11 @@ def format_text_helper(word_list, fmtrs: str):
     sep = " "
     if not spaces:
         sep = ""
-    return sep.join(words)
+    result = sep.join(words)
+
+    global last_formatted_phrase
+    last_formatted_phrase = result
+    return result
 
 
 NOSEP = True
@@ -101,6 +110,7 @@ def every_word(word_func):
 
 
 formatters_dict = {
+    "NOOP": (SEP, lambda i, word, _: word),
     "DOUBLE_UNDERSCORE": (NOSEP, first_vs_rest(lambda w: "__%s__" % w)),
     "PRIVATE_CAMEL_CASE": (NOSEP, first_vs_rest(lambda w: w, lambda w: w.capitalize())),
     "PUBLIC_CAMEL_CASE": (NOSEP, every_word(lambda w: w.capitalize())),
@@ -160,6 +170,9 @@ formatters_dict = {
 formatters_words = {
     "allcaps": formatters_dict["ALL_CAPS"],
     "alldown": formatters_dict["ALL_LOWERCASE"],
+    "say": formatters_dict["NOOP"],
+    "speak": formatters_dict["NOOP"],
+    "dunder": formatters_dict["DOUBLE_UNDERSCORE"],
     "camel": formatters_dict["PRIVATE_CAMEL_CASE"],
     "dotted": formatters_dict["DOT_SEPARATED"],
     "dubstring": formatters_dict["DOUBLE_QUOTED_STRING"],
@@ -219,8 +232,18 @@ class Actions:
         """Hides list of formatters"""
         gui.hide()
 
+    def clear_last_phrase():
+        """Clears the last formatted phrase"""
+        global last_formatted_phrase
+        for character in last_formatted_phrase:
+            actions.edit.delete()
 
-@ctx.capture(rule="{self.formatters}+")
+    def reformat_last_phrase(formatters: str) -> str:
+        """Reformats last formatted phrase"""
+        global last_phrase
+        return FormatText(last_phrase, formatters)
+
+@ctx.capture(rule='{self.formatters}+')
 def formatters(m):
     return ",".join(m.formatters_list)
 

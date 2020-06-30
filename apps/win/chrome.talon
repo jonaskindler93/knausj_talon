@@ -8,7 +8,7 @@ app: Google Chrome
 app: chrome.exe
 -
 tag(): browser
-
+tag(): tabs
 #action(browser.address):
 
 action(browser.bookmark):
