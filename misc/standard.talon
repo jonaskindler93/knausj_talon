@@ -24,7 +24,7 @@ run make (durr | dear): "mkdir "
 tls: "tls"
 M D five: "md5"
 (regex | rejex): "regex"
-(parens|args):
+(parens|arguments):
 	insert("()")
 	key(left)
 (block|brackets):
@@ -78,8 +78,8 @@ paste match: edit.paste_match_style()
 file save: edit.save()
 #menu help: key(F1)
 #spotlight: key(super)
-#(undo that | skunks): edit.undo()
-#redo that: edit.redo()
+(undo that | skunks): edit.undo()
+redo that: edit.redo()
 volume up: key(volup)
 volume down: key(voldown)
 mute: key(mute)

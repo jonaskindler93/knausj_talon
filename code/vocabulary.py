@@ -156,7 +156,7 @@ mapping_vocabulary = {
     "sim see":"SimCLR",
     "herds": "Hertz",
     "pv seen it": "PWC-Net",
-    "flownet": "FlowNet2",
+    "flownet": "FlowNet2", 
     "mobilenet": "MobileNetV2",
     "SSD": "SSD",
     "and stall": "install",
